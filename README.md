@@ -38,9 +38,11 @@ ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11
 # edit the configuration file
 sudo nano /etc/ssh/sshd_config
 
-# set these two lines
+# set these lines, if not already set
 PermitRootLogin no
 PasswordAuthentication no
+ChallengeResponseAuthentication no
+PubkeyAuthentication yes
 
 # restart the service
 sudo service ssh restart
