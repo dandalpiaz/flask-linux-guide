@@ -3,7 +3,7 @@
 
 ## Amazon Lightsail
 
-1. Create an Ubuntu 18 LTS instance in Lightsail.
+1. Create an Ubuntu LTS instance in Lightsail, https://lightsail.aws.amazon.com.
 2. Create a static IP address and attach it to your instance.
 3. Enable HTTPS (port 443) on Lightsail firewall.
 
