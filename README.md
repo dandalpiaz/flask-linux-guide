@@ -3,6 +3,8 @@
 
 This guide will detail a server setup for a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework. An instance on Amazon's [Lightsail](https://aws.amazon.com/lightsail/) is used for hosting - providing a Linux server at a low, fixed cost. This guide covers configuration for:
 
+![](logos.png)
+
 | Software                                                           | Purpose                        |
 | :----------------------------------------------------------------- | :----------------------------- |
 | [Amazon (AWS) Lightsail instance](#amazon-aws-lightsail-instance)  | Host provider                  |
