@@ -31,6 +31,15 @@ chmod 400 key.pem
 ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11
 ```
 
+## Initial updates
+
+Run updates for installed packages:
+
+```
+sudo apt-get update
+sudo apt-get upgrade
+```
+
 ## Secure the server
 
 1. Disallow root login and password logins:
