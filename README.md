@@ -3,9 +3,10 @@
 
 ## Amazon Lightsail
 
-1. Create an Ubuntu LTS instance in Lightsail, https://lightsail.aws.amazon.com.
-2. Create a static IP address and attach it to your instance.
-3. Enable HTTPS (port 443) on Lightsail firewall.
+1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
+2. On the **Instances** tab, create an Ubuntu LTS instance
+3. On the **Networking** Create a static IP address and attach it to your instance.
+4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
 
 ## SSH configuration
 
