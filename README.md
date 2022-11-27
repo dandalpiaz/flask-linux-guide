@@ -52,7 +52,7 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 
 ## Nginx
 
-1. Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/transit`:
+1. Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/example`:
     ```
     server {
         listen 80;
@@ -73,14 +73,14 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 ## Let's Encrypt
 
 1. If you haven't already, add a DNS record for your custom domain and point it to your Lightsail instance's static IP
-2. Run certbot for your domain, `sudo certbot --nginx -d transitcu.com`
+2. Run certbot for your domain, `sudo certbot --nginx -d example.com`
 3. Do a dry-run to make sure setup is correct, `sudo certbot renew --dry-run`
 
 ## Supervisor and Gunicorn
 
-1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/transit.conf`:
+1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/example.conf`:
     ```
-    [program:transit-cu]
+    [program:app-name]
     command=/home/ubuntu/app-name/venv/bin/gunicorn -b localhost:8000 -w 3 app-name:app
     directory=/home/ubuntu/app-name
     user=ubuntu
