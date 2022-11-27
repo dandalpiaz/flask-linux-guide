@@ -19,7 +19,7 @@ This guide will detail a server setup for a web application using the [Flask](ht
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
 2. On the **Instances** tab, create an Ubuntu LTS instance
-3. On the **Networking** Create a static IP address and attach it to your instance.
+3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
 
 ### SSH connection
@@ -30,44 +30,36 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
 3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
 
-## Initial updates
+## Linux / Ubuntu
 
-Run updates for installed packages:
+1. Install packages for python, let's encrypt, supervisor, nginx, git:
+    ```bash
+    sudo apt-get -y update
+    sudo apt-get -y install python3 python3-venv python3-dev python3-certbot-nginx
+    sudo apt-get -y install supervisor nginx git
+    ```
+2. Run updates for installed packages:
+    ```
+    sudo apt-get update
+    sudo apt-get upgrade
+    ```
+3. [[[ If a more recent version of Python is need, you can [install Python 3.11 and set it as the default](https://www.debugpoint.com/install-python-3-11-ubuntu/). ]]]
+4. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
+    ```
+    # set these lines, if not already set
+    PermitRootLogin no
+    PasswordAuthentication no
+    ChallengeResponseAuthentication no
+    PubkeyAuthentication yes
+    ```
+5. Restart the SSH service, `sudo service ssh restart`
 
-```
-sudo apt-get update
-sudo apt-get upgrade
-```
 
-## Secure the server
 
-1. Disallow root login and password logins:
 
-```bash
-# edit the configuration file
-sudo nano /etc/ssh/sshd_config
 
-# set these lines, if not already set
-PermitRootLogin no
-PasswordAuthentication no
-ChallengeResponseAuthentication no
-PubkeyAuthentication yes
 
-# restart the service
-sudo service ssh restart
-```
 
-## Install dependencies
-
-1. Install python, supervisor, nginx, git
-
-```bash
-sudo apt-get -y update
-sudo apt-get -y install python3 python3-venv python3-dev
-sudo apt-get -y install supervisor nginx git
-```
-
-If a more recent version of Python is need, you can [install Python 3.11 and set it as the default](https://www.debugpoint.com/install-python-3-11-ubuntu/).
 
 ## Install the application
 
