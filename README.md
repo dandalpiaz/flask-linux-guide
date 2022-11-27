@@ -147,7 +147,7 @@ sudo service nginx reload
 
 ```bash
 sudo add-apt-repository ppa:certbot/certbot
-sudo apt install python-certbot-nginx
+sudo apt install python3-certbot-nginx
 ```
 
 2. Run certbot for your domain
