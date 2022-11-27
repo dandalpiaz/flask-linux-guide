@@ -1,7 +1,19 @@
 
-# Linux/Ubuntu, Nginx, Supervisor, and Gunicorn Server Configuration for Python Flask Application on Amazon (AWS) Lightsail, with Custom Domain and Let's Encrypt SSL Certificate
+# Linux Server Configuration for Python Flask Application Hosted on Amazon (AWS) Lightsail
 
-## Amazon Lightsail
+Covers configuration for:
+
+| Software                         | Purpose                        |
+| :------------------------------- | :----------------------------- |
+| Amazon (AWS) Lightsail instance  | Host provider                  |
+| Linux / Ubuntu                   | Operating system               |
+| Nginx                            | Web server                     |
+| Let's Encrypt                    | SSL certificate                |
+| Supervisor                       | Manage Gunicorn processes      |
+| Gunicorn                         | Python WSGI server             |
+| Flask                            | Python web framework           |
+
+## Amazon (AWS) Lightsail instance
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
 2. On the **Instances** tab, create an Ubuntu LTS instance
