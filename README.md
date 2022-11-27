@@ -68,6 +68,8 @@ sudo apt-get -y install python3 python3-venv python3-dev
 sudo apt-get -y install supervisor nginx git
 ```
 
+If a more recent version of Python is need, you can [install Python 3.11 and set it as the default](https://www.debugpoint.com/install-python-3-11-ubuntu/).
+
 ## Install the application
 
 1. Checkout application files, create a virtual enviornment and install application dependencies
