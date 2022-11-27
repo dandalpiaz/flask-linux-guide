@@ -10,10 +10,10 @@ This guide will detail a server setup for a web application using the [Flask](ht
 | [Amazon (AWS) Lightsail instance](#amazon-aws-lightsail-instance)  | Host provider                  |
 | [Linux / Ubuntu](#linux--ubuntu)                                   | Operating system               |
 | [Nginx](#nginx)                                                    | Web server                     |
-| Let's Encrypt                                                      | SSL certificate                |
-| Supervisor                                                         | Manage Gunicorn processes      |
-| Gunicorn                                                           | Python WSGI server             |
-| Flask                                                              | Python web framework           |
+| [Let's Encrypt](#lets-encrypt)                                     | SSL certificate                |
+| [Supervisor](#supervisor-and-gunicorn)                             | Manage Gunicorn processes      |
+| [Gunicorn](#supervisor-and-gunicorn)                               | Python WSGI server             |
+| [Flask](#flask)                                                    | Python web framework           |
 
 ## Amazon (AWS) Lightsail instance
 
@@ -33,16 +33,12 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 ## Linux / Ubuntu
 
 1. Install packages for python, let's encrypt, supervisor, nginx, git:
-    ```bash
-    sudo apt-get -y update
-    sudo apt-get -y install python3 python3-venv python3-dev python3-certbot-nginx
-    sudo apt-get -y install supervisor nginx git
-    ```
+    - `sudo apt-get -y update`
+    - `sudo apt-get -y install python3 python3-venv python3-dev python3-certbot-nginx`
+    - `sudo apt-get -y install supervisor nginx git`
 2. Run updates for installed packages:
-    ```
-    sudo apt-get update
-    sudo apt-get upgrade
-    ```
+    - `sudo apt-get update`
+    - `sudo apt-get upgrade`
 3. [[[ If a more recent version of Python is need, you can [install Python 3.11 and set it as the default](https://www.debugpoint.com/install-python-3-11-ubuntu/). ]]]
 4. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
     ```
@@ -80,59 +76,37 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 2. Run certbot for your domain, `sudo certbot --nginx -d transitcu.com`
 3. Do a dry-run to make sure setup is correct, `sudo certbot renew --dry-run`
 
+## Supervisor and Gunicorn
 
+1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/transit.conf`:
+    ```
+    [program:transit-cu]
+    command=/home/ubuntu/app-name/venv/bin/gunicorn -b localhost:8000 -w 3 app-name:app
+    directory=/home/ubuntu/app-name
+    user=ubuntu
+    autostart=true
+    autorestart=true
+    stopasgroup=true
+    killasgroup=true
+    ```
+2. Reload supervisor:
+    - `sudo supervisorctl reload`
+    - `sudo supervisorctl status`
 
+## Flask
 
-
-
-
-
-
-
-## Install the application
-
-1. Checkout application files, create a virtual enviornment and install application dependencies
-
-```bash
-# example checkout
-cd ~
-git clone https://github.com/dandalpiaz/transit-cu.git
-cd transit-cu
-
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-## Set up Gunicorn and Supervisor
-
-1. Create a supervisor configuration file.
-
-```bash
-sudo nano /etc/supervisor/conf.d/transit.conf
-
-# example file
-[program:transit-cu]
-command=/home/ubuntu/transit-cu/venv/bin/gunicorn -b localhost:8000 -w 3 transit:app
-directory=/home/ubuntu/transit-cu
-user=ubuntu
-autostart=true
-autorestart=true
-stopasgroup=true
-killasgroup=true
-```
-
-2. Reload supervisor
-
-```bash
-sudo supervisorctl reload
-sudo supervisorctl status
-```
+1. Checkout application files, create a virtual enviornment and install application dependencies:
+    - `cd ~`
+    - `git clone https://github.com/username/example-repo.git`
+    - `cd example-repo`
+    - `python3 -m venv venv`
+    - `source venv/bin/activate`
+    - `pip install -r requirements.txt`
 
 ## TODO
 
 - add ufw configuration?
-- add database configuration
+- add database configuration, other flask configuration?
 
 ## References
 
