@@ -8,8 +8,8 @@ This guide will detail a server setup for a web application using the [Flask](ht
 | Software                                                           | Purpose                        |
 | :----------------------------------------------------------------- | :----------------------------- |
 | [Amazon (AWS) Lightsail instance](#amazon-aws-lightsail-instance)  | Host provider                  |
-| Linux / Ubuntu                                                     | Operating system               |
-| Nginx                                                              | Web server                     |
+| [Linux / Ubuntu](#linux--ubuntu)                                   | Operating system               |
+| [Nginx](#nginx)                                                    | Web server                     |
 | Let's Encrypt                                                      | SSL certificate                |
 | Supervisor                                                         | Manage Gunicorn processes      |
 | Gunicorn                                                           | Python WSGI server             |
@@ -53,6 +53,34 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     PubkeyAuthentication yes
     ```
 5. Restart the SSH service, `sudo service ssh restart`
+
+## Nginx
+
+1. Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/transit`:
+    ```
+    server {
+        listen 80;
+        listen [::]:80;
+
+        server_name example.com;
+
+        location / {
+            proxy_pass http://localhost:8000;
+        }
+
+        access_log /var/log/example_access.log;
+        error_log /var/log/example_error.log;
+    }
+    ```
+2. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload`
+
+## Let's Encrypt
+
+1. If you haven't already, add a DNS record for your custom domain and point it to your Lightsail instance's static IP
+2. Run certbot for your domain, `sudo certbot --nginx -d transitcu.com`
+3. Do a dry-run to make sure setup is correct, `sudo certbot renew --dry-run`
+
+
 
 
 
@@ -99,58 +127,6 @@ killasgroup=true
 ```bash
 sudo supervisorctl reload
 sudo supervisorctl status
-```
-
-## Setup Nginx
-
-1. Remove the default configuration file and create a new one.
-
-```bash
-sudo rm /etc/nginx/sites-enabled/default
-sudo nano /etc/nginx/sites-enabled/transit
-
-# example file
-server {
-    listen 80;
-    listen [::]:80;
-
-    server_name transitcu.com;
-
-    location / {
-        proxy_pass http://localhost:8000;
-    }
-
-    access_log /var/log/transit_access.log;
-    error_log /var/log/transit_error.log;
-}
-```
-
-2. Check the syntax of the configuration file and reload Nginx
-
-```bash
-sudo nginx -t
-sudo service nginx reload
-```
-
-## Setup Let's Encrypt
-
-1. Install the package
-
-```bash
-sudo add-apt-repository ppa:certbot/certbot
-sudo apt install python3-certbot-nginx
-```
-
-2. Run certbot for your domain
-
-```bash
-sudo certbot --nginx -d transitcu.com
-```
-
-3. Do a dry-run to make sure setup is correct
-
-```bash
-sudo certbot renew --dry-run
 ```
 
 ## TODO
