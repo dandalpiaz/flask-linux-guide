@@ -1,5 +1,5 @@
 
-# Linux Server Configuration for Flask Application on Amazon Lightsail
+# Linux/Ubuntu, Nginx, Supervisor, and Gunicorn Server Configuration for Python Flask Application on Amazon (AWS) Lightsail, with Custom Domain and Let's Encrypt SSL Certificate
 
 ## Amazon Lightsail
 
