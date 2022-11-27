@@ -1,17 +1,17 @@
 
 # Linux Server Configuration for Python Flask Application Hosted on Amazon (AWS) Lightsail
 
-Covers configuration for:
+This guide will detail a server setup for a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework. An instance on Amazon's [Lightsail](https://aws.amazon.com/lightsail/) is used for hosting - providing a Linux server at a low, fixed cost. This guide covers configuration for:
 
-| Software                         | Purpose                        |
-| :------------------------------- | :----------------------------- |
-| Amazon (AWS) Lightsail instance  | Host provider                  |
-| Linux / Ubuntu                   | Operating system               |
-| Nginx                            | Web server                     |
-| Let's Encrypt                    | SSL certificate                |
-| Supervisor                       | Manage Gunicorn processes      |
-| Gunicorn                         | Python WSGI server             |
-| Flask                            | Python web framework           |
+| Software                                                           | Purpose                        |
+| :----------------------------------------------------------------- | :----------------------------- |
+| [Amazon (AWS) Lightsail instance](#amazon-aws-lightsail-instance)  | Host provider                  |
+| Linux / Ubuntu                                                     | Operating system               |
+| Nginx                                                              | Web server                     |
+| Let's Encrypt                                                      | SSL certificate                |
+| Supervisor                                                         | Manage Gunicorn processes      |
+| Gunicorn                                                           | Python WSGI server             |
+| Flask                                                              | Python web framework           |
 
 ## Amazon (AWS) Lightsail instance
 
@@ -20,28 +20,13 @@ Covers configuration for:
 3. On the **Networking** Create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
 
-## SSH configuration
+### SSH connection
 
-1. Download your SSH key from Lightsail.
-2. If you are using Windows Subsystem for Linux:
+From the **Instances** tab in the Lightsail web interface, you can start an SSH session from your browser using the "Connect" option. Alternatively, you can:
 
-```bash
-# navigate to the directory that contains the key
-cd /mnt/d/ssh
-
-# copy the key to the ssh folder in the subsystem
-cp LightSailDefaultPrivateKey-us-east-2.pem ~/.ssh/key.pem
-
-# set permissions on the key
-chmod 400 key.pem
-```
-
-3. SSH into the server, e.g:
-
-```bash
-# example
-ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11
-```
+1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
+2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
+3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
 
 ## Initial updates
 
