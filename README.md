@@ -95,7 +95,14 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 
 ## Flask
 
-1. Checkout application files, create a virtual enviornment and install application dependencies:
+1. Optionally configure an SSH key on your Lightsail instance for GitHub clones/pulls:
+    - `cd ~/.ssh`
+    - `ssh-keygen -t ed25519 -C "example@example.com"`
+        - Give the key a name and optionally set a passphrase
+    - `eval "$(ssh-agent -s)"`
+    - `ssh-add ~/.ssh/key_name`
+    - Add the public key to your GitHub profile at https://github.com/settings/keys
+2. Checkout application files, create a virtual enviornment and install application dependencies:
     - `cd ~`
     - `git clone https://github.com/username/example-repo.git`
     - `cd example-repo`
