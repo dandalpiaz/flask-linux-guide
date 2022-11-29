@@ -107,6 +107,25 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     - `sudo supervisorctl reload`
     - `sudo supervisorctl status`
 
+## (optional) Password protect during development
+
+1. Create a username and password with Nginx:
+    - `sudo sh -c "echo -n 'myusername:' >> /etc/nginx/.htpasswd"`
+    - `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"`
+2. Edit your configuration file and add 'auth_basic' lines:
+    ```
+    ...
+    
+    location / {
+        proxy_pass http://localhost:8000;
+        auth_basic "Restricte Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+    }
+    
+    ...
+    ```
+3. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload` 
+
 ## TODO
 
 - add ufw configuration?
