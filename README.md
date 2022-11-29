@@ -78,20 +78,17 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 
 ## Supervisor and Gunicorn
 
-1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/example.conf`:
+1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/app-name.conf`:
     ```
-    [program:app-name]
-    command=/home/ubuntu/app-name/venv/bin/gunicorn -b localhost:8000 -w 3 app-name:app
-    directory=/home/ubuntu/app-name
+    [program:app-directory]
+    command=/home/ubuntu/app-directory/venv/bin/gunicorn -b localhost:8000 -w 3 app-name:app
+    directory=/home/ubuntu/app-directory
     user=ubuntu
     autostart=true
     autorestart=true
     stopasgroup=true
     killasgroup=true
     ```
-2. Reload supervisor:
-    - `sudo supervisorctl reload`
-    - `sudo supervisorctl status`
 
 ## Flask
 
@@ -109,6 +106,10 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     - `python3 -m venv venv`
     - `source venv/bin/activate`
     - `pip install -r requirements.txt`
+    - Set configuration variables and setup the database, if necessary
+3. Reload supervisor:
+    - `sudo supervisorctl reload`
+    - `sudo supervisorctl status`
 
 ## TODO
 
