@@ -18,7 +18,7 @@ This guide will detail a server setup for a web application using the [Flask](ht
 ## Amazon (AWS) Lightsail instance
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
-2. On the **Instances** tab, create an Ubuntu 20 LTS instance (OS Only)
+2. On the **Instances** tab, create an Ubuntu 20.x LTS instance (OS Only)
 3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
 
@@ -34,25 +34,21 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 
 1. Install packages for python, let's encrypt, supervisor, nginx, git:
     - `sudo apt-get -y update`
-    - `sudo apt-get -y install python3 python3-venv python3-dev python3-certbot-nginx`
+    - `sudo apt-get -y install python3-venv certbot python3-certbot-nginx`
     - `sudo apt-get -y install supervisor nginx git`
-2. Run updates for installed packages:
-    - `sudo apt-get update`
-    - `sudo apt-get upgrade`
-3. [[[ If a more recent version of Python is need, you can [install Python 3.11 and set it as the default](https://www.debugpoint.com/install-python-3-11-ubuntu/). ]]]
-4. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
+2. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
     ```
     # set these lines, if not already set
     PermitRootLogin no
+    PubkeyAuthentication yes
     PasswordAuthentication no
     ChallengeResponseAuthentication no
-    PubkeyAuthentication yes
     ```
 5. Restart the SSH service, `sudo service ssh restart`
 
 ## Nginx
 
-1. Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/example`:
+1. Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/appname`:
     ```
     server {
         listen 80;
@@ -64,8 +60,8 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
             proxy_pass http://localhost:8000;
         }
 
-        access_log /var/log/example_access.log;
-        error_log /var/log/example_error.log;
+        access_log /var/log/appname_access.log;
+        error_log /var/log/appname_error.log;
     }
     ```
 2. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload`
@@ -78,11 +74,11 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 
 ## Supervisor and Gunicorn
 
-1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/app-name.conf`:
+1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
     ```
-    [program:app-directory]
-    command=/home/ubuntu/app-directory/venv/bin/gunicorn -b localhost:8000 -w 3 app-name:app
-    directory=/home/ubuntu/app-directory
+    [program:appdirectory]
+    command=/home/ubuntu/appdirectory/venv/bin/gunicorn -b localhost:8000 -w 3 appname:app
+    directory=/home/ubuntu/appdirectory
     user=ubuntu
     autostart=true
     autorestart=true
@@ -105,7 +101,7 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     - `cd example-repo`
     - `python3 -m venv venv`
     - `source venv/bin/activate`
-    - `pip install -r requirements.txt`
+    - `pip3 install -r requirements.txt`
     - Set configuration variables and setup the database, if necessary
 3. Reload supervisor:
     - `sudo supervisorctl reload`
