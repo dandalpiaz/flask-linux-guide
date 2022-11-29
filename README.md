@@ -18,7 +18,7 @@ This guide will detail a server setup for a web application using the [Flask](ht
 ## Amazon (AWS) Lightsail instance
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
-2. On the **Instances** tab, create an Ubuntu LTS instance
+2. On the **Instances** tab, create an Ubuntu 20 LTS instance (OS Only)
 3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
 
