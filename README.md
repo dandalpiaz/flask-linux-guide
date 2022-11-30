@@ -36,7 +36,8 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     - `sudo apt-get -y update`
     - `sudo apt-get -y install python3-venv certbot python3-certbot-nginx`
     - `sudo apt-get -y install supervisor nginx git`
-2. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
+2. Run upgrades with `sudo apt-get upgrade`
+3. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
     ```
     # set these lines, if not already set
     PermitRootLogin no
@@ -44,7 +45,7 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     PasswordAuthentication no
     ChallengeResponseAuthentication no
     ```
-5. Restart the SSH service, `sudo service ssh restart`
+4. Restart the SSH service, `sudo service ssh restart`
 
 ## Nginx
 
