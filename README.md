@@ -24,7 +24,7 @@ This guide will detail a server setup for a web application using the [Flask](ht
 
 ### SSH connection
 
-From the **Instances** tab in the Lightsail web interface, you can start an SSH session from your browser using the "Connect" option. Alternatively, you can:
+From the **Instances** tab in the Lightsail web interface, you can start an SSH session from your browser using the "Connect" option. For extra convenience, you can bookmark the URL for the session for your instance (e.g. https://lightsail.aws.amazon.com/ls/remote/us-east-2/instances/instance-name/terminal?protocol=ssh). Alternatively, you can:
 
 1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
 2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
