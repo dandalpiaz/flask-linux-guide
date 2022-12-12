@@ -92,9 +92,7 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 1. Optionally configure an SSH key on your Lightsail instance for GitHub clones/pulls:
     - `cd ~/.ssh`
     - `ssh-keygen -t ed25519 -C "example@example.com"`
-        - Give the key a name and optionally set a passphrase
-    - `eval "$(ssh-agent -s)"`
-    - `ssh-add ~/.ssh/key_name`
+        - To avoid having to add the key to the ssh-agent, don't give the key a custom name (will default to "id_ed25519") and don't set a passphrase
     - Add the public key to your GitHub profile at https://github.com/settings/keys
 2. Checkout application files, create a virtual enviornment and install application dependencies:
     - `cd ~`
