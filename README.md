@@ -105,6 +105,8 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 3. Reload supervisor:
     - `sudo supervisorctl reload`
     - `sudo supervisorctl status`
+    
+To make udpates to the application, you can do a `git pull` on the repo and then run `sudo supervisorctl reload` .
 
 ## (optional) Password protect during development
 
