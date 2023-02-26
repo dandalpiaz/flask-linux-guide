@@ -87,6 +87,48 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     killasgroup=true
     ```
 
+## Python (WIP)
+
+If you would like to use a more recent version of Python than what is availble in the Ubuntu LTS instance, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one.
+
+### Install Python 3.11.x
+
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
+
+sudo apt update
+
+sudo apt install python3.11
+
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2
+
+sudo update-alternatives --config python3
+
+# select 3.11.x when prompted
+```
+
+### Clean-up Python installation
+
+The new version doesn't come with some packages, will need to add them and clean things up.
+
+```
+sudo apt remove --purge python3-apt
+
+sudo apt autoclean
+
+sudo apt install python3-apt
+
+sudo apt install python3.11-distutils
+
+sudo apt install python3-pip
+
+#python3.11 -m pip install --upgrade pip
+
+sudo apt install python3.11-venv
+```
+
 ## Flask
 
 1. Optionally configure an SSH key on your Lightsail instance for GitHub clones/pulls:
