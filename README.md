@@ -120,7 +120,7 @@ If you would like to use a more recent version of Python than what is availble i
     - `python3.11 -m venv venv`
     - `source venv/bin/activate`
     - `pip3 install -r requirements.txt`
-    - Set configuration variables and setup the database, if necessary
+    - Set configuration variables and setup the database, if necessary, e.g. `flask db upgrade`
 3. Reload supervisor:
     - `sudo supervisorctl reload`
     - `sudo supervisorctl status`
