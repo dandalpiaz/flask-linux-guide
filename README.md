@@ -30,11 +30,24 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
 2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
 3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
 
+## Python (WIP)
+
+If you would like to use a more recent version of Python than what is availble in the Ubuntu LTS instance, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one.
+
+1. Install Python 3.11.x:
+    ```
+    sudo add-apt-repository ppa:deadsnakes/ppa
+
+    sudo apt update
+
+    sudo apt install python3.11
+    ```
+
 ## Linux / Ubuntu
 
 1. Install packages for python, let's encrypt, supervisor, nginx, git:
     - `sudo apt-get -y update`
-    - `sudo apt-get -y install python3-venv certbot python3-certbot-nginx`
+    - `sudo apt-get -y install python3.11-venv certbot python3.11-certbot-nginx`
     - `sudo apt-get -y install supervisor nginx git`
 2. Run upgrades with `sudo apt-get upgrade`
 3. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
@@ -87,43 +100,6 @@ From the **Instances** tab in the Lightsail web interface, you can start an SSH 
     killasgroup=true
     ```
 
-## Python (WIP)
-
-If you would like to use a more recent version of Python than what is availble in the Ubuntu LTS instance, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one.
-
-1. Install Python 3.11.x:
-    ```
-    sudo add-apt-repository ppa:deadsnakes/ppa
-
-    sudo apt update
-
-    sudo apt install python3.11
-
-    sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-
-    sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2
-
-    sudo update-alternatives --config python3
-
-    # select 3.11.x when prompted
-    ```
-2. Clean-up Python installation:
-    ```
-    sudo apt remove --purge python3-apt
-
-    sudo apt autoclean
-
-    sudo apt install python3-apt
-
-    sudo apt install python3.11-distutils
-
-    sudo apt install python3-pip
-
-    #python3.11 -m pip install --upgrade pip
-
-    sudo apt install python3.11-venv
-    ```
-
 ## Flask
 
 1. Optionally configure an SSH key on your Lightsail instance for GitHub clones/pulls:
@@ -135,7 +111,7 @@ If you would like to use a more recent version of Python than what is availble i
     - `cd ~`
     - `git clone https://github.com/username/example-repo.git`
     - `cd example-repo`
-    - `python3 -m venv venv`
+    - `python3.11 -m venv venv`
     - `source venv/bin/activate`
     - `pip3 install -r requirements.txt`
     - Set configuration variables and setup the database, if necessary
