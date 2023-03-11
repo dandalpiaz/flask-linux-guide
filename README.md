@@ -22,6 +22,10 @@ This guide will detail a server setup for a web application using the [Flask](ht
 3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
 
+### DNS
+
+If you will be using a custom domain, set up a blank "A" record with your DNS provider and point it at the static IP address for your instance.
+
 ### SSH connection
 
 From the **Instances** tab in the Lightsail web interface, you can start an SSH session from your browser using the "Connect" option. For extra convenience, you can bookmark the URL for the session for your instance (e.g. https://lightsail.aws.amazon.com/ls/remote/us-east-2/instances/instance-name/terminal?protocol=ssh). Alternatively, you can:
@@ -49,7 +53,7 @@ If you would like to use a more recent version of Python than what is availble i
 
 1. Install packages for python, let's encrypt, supervisor, nginx, git:
     - `sudo apt-get -y update`
-    - `sudo apt-get -y install certbot python3.11-certbot-nginx`
+    - `sudo apt-get -y install certbot python3-certbot-nginx`
     - `sudo apt-get -y install supervisor nginx git`
 2. Run upgrades with `sudo apt-get upgrade`
 3. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
@@ -104,14 +108,14 @@ If you would like to use a more recent version of Python than what is availble i
 
 ## Flask
 
-1. Optionally configure an SSH key on your Lightsail instance for GitHub clones/pulls:
+1. Configure an SSH key on your Lightsail instance for GitHub clones/pulls:
     - `cd ~/.ssh`
     - `ssh-keygen -t ed25519 -C "example@example.com"`
         - To avoid having to add the key to the ssh-agent, don't give the key a custom name (will default to "id_ed25519") and don't set a passphrase
     - Add the public key to your GitHub profile at https://github.com/settings/keys
 2. Checkout application files, create a virtual enviornment and install application dependencies:
     - `cd ~`
-    - `git clone https://github.com/username/example-repo.git`
+    - `git clone git@github.com:username/example-repo.git`
     - `cd example-repo`
     - `python3.11 -m venv venv`
     - `source venv/bin/activate`
@@ -128,7 +132,7 @@ To make udpates to the application, you can do a `git pull` on the repo and then
 1. Create a username and password with Nginx:
     - `sudo sh -c "echo -n 'myusername:' >> /etc/nginx/.htpasswd"`
     - `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"`
-2. Edit your configuration file and add 'auth_basic' lines:
+2. Edit your configuration file (e.g. `sudo nano /etc/nginx/sites-enabled/appname` ) and add 'auth_basic' lines:
     ```
     ...
     
