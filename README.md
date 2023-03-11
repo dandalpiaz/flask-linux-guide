@@ -41,13 +41,15 @@ If you would like to use a more recent version of Python than what is availble i
     sudo apt update
 
     sudo apt install python3.11
+    
+    sudo apt-get install python3.11-venv
     ```
 
 ## Linux / Ubuntu
 
 1. Install packages for python, let's encrypt, supervisor, nginx, git:
     - `sudo apt-get -y update`
-    - `sudo apt-get -y install python3.11-venv certbot python3.11-certbot-nginx`
+    - `sudo apt-get -y install certbot python3.11-certbot-nginx`
     - `sudo apt-get -y install supervisor nginx git`
 2. Run upgrades with `sudo apt-get upgrade`
 3. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
