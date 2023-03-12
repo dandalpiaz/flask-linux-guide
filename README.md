@@ -56,6 +56,7 @@ If you would like to use a more recent version of Python than what is availble i
     - `sudo apt-get -y install certbot python3-certbot-nginx`
     - `sudo apt-get -y install supervisor nginx git`
 2. Run upgrades with `sudo apt-get upgrade`
+    - You may have to do a couple rounds of updates and reboot in-between, `sudo reboot`
 3. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
     ```
     # set these lines, if not already set
