@@ -112,8 +112,8 @@ If you would like to use a more recent version of Python than what is availble i
 1. Configure an SSH key on your Lightsail instance for GitHub clones/pulls:
     - `cd ~/.ssh`
     - `ssh-keygen -t ed25519 -C "example@example.com"`
-        - To avoid having to add the key to the ssh-agent, don't give the key a custom name (will default to "id_ed25519") and don't set a passphrase
-    - Add the public key to your GitHub profile at https://github.com/settings/keys
+        - To avoid having to add the key to the ssh-agent, don't give the key a custom name (will default to "id_ed25519"), and (optionally) set a passphrase
+    - Add the public key as a 'deploy key' to your GitHub repo, e.g. https://github.com/username/reponame/settings/keys
 2. Checkout application files, create a virtual enviornment and install application dependencies:
     - `cd ~`
     - `git clone git@github.com:username/example-repo.git`
