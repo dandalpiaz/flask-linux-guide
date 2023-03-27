@@ -83,6 +83,7 @@ If you would like to use a more recent version of Python than what is availble i
 
         access_log /var/log/appname_access.log;
         error_log /var/log/appname_error.log;
+        client_max_body_size 5M;
     }
     ```
 2. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload`
