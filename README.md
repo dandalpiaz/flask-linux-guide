@@ -1,53 +1,64 @@
 
-# Linux Server Configuration for Python Flask Application Hosted on Amazon (AWS) Lightsail
+# Flask in a Production Environment - FAQs
 
-This guide will detail a server setup for a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework. An instance on Amazon's [Lightsail](https://aws.amazon.com/lightsail/) is used for hosting - providing a Linux server at a low, fixed cost. This guide covers configuration for:
+This guide will detail a server setup for a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework. An instance on Amazon's [Lightsail](https://aws.amazon.com/lightsail/) is used for hosting - providing a Linux server at a low, fixed cost. Don't use headings beyond h2 to avoid confusion?
 
-![](logos.png)
+## Table of Contents
 
-| Software                                                           | Purpose                        |
-| :----------------------------------------------------------------- | :----------------------------- |
-| [Amazon (AWS) Lightsail instance](#amazon-aws-lightsail-instance)  | Host provider                  |
-| [Linux / Ubuntu](#linux--ubuntu)                                   | Operating system               |
-| [Nginx](#nginx)                                                    | Web server                     |
-| [Let's Encrypt](#lets-encrypt)                                     | SSL certificate                |
-| [Supervisor](#supervisor-and-gunicorn)                             | Manage Gunicorn processes      |
-| [Gunicorn](#supervisor-and-gunicorn)                               | Python WSGI server             |
-| [Flask](#flask)                                                    | Python web framework           |
+- [Where can I **host** a Flask application?](#where-can-i-host-a-flask-application)
+- [How can I use a **specific version of Python** for my app?](#how-can-i-use-a-specific-version-of-python-for-my-app)
+- [How do I **protect** my app during **development**?](#how-do-i-protect-my-app-during-development)
 
-## Amazon (AWS) Lightsail instance
+## Where can I host a Flask application?
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
 2. On the **Instances** tab, create an Ubuntu 20.x LTS instance (OS Only)
 3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
+5. If you will be using a custom domain, set up a blank "A" record with your DNS provider and point it at the static IP address for your instance.
+6. SSH configuration:
+    1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
+    2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
+    3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
 
-### DNS
+## How can I use a specific version of Python for my app?
 
-If you will be using a custom domain, set up a blank "A" record with your DNS provider and point it at the static IP address for your instance.
+If you would like to use a more recent version of Python than what is availble in linux distribution, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one. When creating the venv [[[tbd command]]]
 
-### SSH connection
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
 
-From the **Instances** tab in the Lightsail web interface, you can start an SSH session from your browser using the "Connect" option. For extra convenience, you can bookmark the URL for the session for your instance (e.g. https://lightsail.aws.amazon.com/ls/remote/us-east-2/instances/instance-name/terminal?protocol=ssh). Alternatively, you can:
+sudo apt update
 
-1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
-2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
-3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
+sudo apt install python3.12
 
-## Python (WIP)
+sudo apt-get install python3.12-venv
+```
 
-If you would like to use a more recent version of Python than what is availble in the Ubuntu LTS instance, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one.
+## How do I protect my app during development?
 
-1. Install Python 3.11.x:
-    ```
-    sudo add-apt-repository ppa:deadsnakes/ppa
+Create a username and password with Nginx:
 
-    sudo apt update
+```
+sudo sh -c "echo -n 'myusername:' >> /etc/nginx/.htpasswd"
+sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
+```
 
-    sudo apt install python3.11
-    
-    sudo apt-get install python3.11-venv
-    ```
+Edit your configuration file (e.g. `sudo nano /etc/nginx/sites-enabled/appname` ) and add 'auth_basic' lines:
+
+```
+...
+
+location / {
+    proxy_pass http://localhost:8000;
+    auth_basic "Restricte Content";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+}
+
+...
+```
+
+Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload` 
 
 ## Linux / Ubuntu
 
@@ -129,30 +140,5 @@ If you would like to use a more recent version of Python than what is availble i
     
 To make udpates to the application, you can do a `git pull` on the repo and then run `sudo supervisorctl reload` .
 
-## (optional) Password protect during development
 
-1. Create a username and password with Nginx:
-    - `sudo sh -c "echo -n 'myusername:' >> /etc/nginx/.htpasswd"`
-    - `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"`
-2. Edit your configuration file (e.g. `sudo nano /etc/nginx/sites-enabled/appname` ) and add 'auth_basic' lines:
-    ```
-    ...
-    
-    location / {
-        proxy_pass http://localhost:8000;
-        auth_basic "Restricte Content";
-        auth_basic_user_file /etc/nginx/.htpasswd;
-    }
-    
-    ...
-    ```
-3. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload` 
 
-## TODO
-
-- add ufw configuration?
-- add database configuration, other flask configuration?
-
-## References
-
-- [The Flask Mega-Tutorial Part XVII: Deployment on Linux](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux)
