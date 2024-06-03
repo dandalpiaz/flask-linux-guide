@@ -1,19 +1,41 @@
 
-# Linux Server Configuration for Python Flask Application Hosted on Amazon (AWS) Lightsail
+# Linux Server Configuration for a Python Flask Application on a Debian-based Host
 
-This guide will detail a server setup for a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework. An instance on Amazon's [Lightsail](https://aws.amazon.com/lightsail/) is used for hosting - providing a Linux server at a low, fixed cost. This guide covers configuration for:
+This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a typical Debian-based Linux server. An instance on Amazon's Lightsail is used for hosting - providing a server at a low, fixed cost. Configuration for specific software/packages is included, but can be swapped out as needed.
 
 ![](logos.png)
 
-| Software                                                           | Purpose                        |
-| :----------------------------------------------------------------- | :----------------------------- |
-| [Amazon (AWS) Lightsail instance](#amazon-aws-lightsail-instance)  | Host provider                  |
-| [Linux / Ubuntu](#linux--ubuntu)                                   | Operating system               |
-| [Nginx](#nginx)                                                    | Web server                     |
-| [Let's Encrypt](#lets-encrypt)                                     | SSL certificate                |
-| [Supervisor](#supervisor-and-gunicorn)                             | Manage Gunicorn processes      |
-| [Gunicorn](#supervisor-and-gunicorn)                               | Python WSGI server             |
-| [Flask](#flask)                                                    | Python web framework           |
+## Table of Contents (WIP)
+
+- Server Setup
+    - AWS Lightsail Instance
+    - Install Python
+    - Install Linux Packages
+    - SSH Securing
+    - Nginx
+    - Let's Encrypt
+    - Hosts File
+    - Supervisor and Gunicorn
+    - Flask
+    - MariaDB
+    - Protect DEV
+    - Swap File
+    - Backups
+    - Restoring
+- Addons
+    - Object Storage
+    - SMTP Email
+    - Cloudflare CDN
+    - Cloudflare Turnstile
+- Maintenance
+    - Python Core
+    - Python Packages
+    - Debian Core and Packages
+    - Deploying Changes
+- Useful Extensions, Snippets, Resources
+    - Extensions
+    - Snippets (and Command Line)
+    - Resources
 
 ## Amazon (AWS) Lightsail instance
 
