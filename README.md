@@ -1,24 +1,24 @@
 
 # Linux Server Configuration for a Python Flask Application on a Debian-based Host
 
-This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a typical Debian-based Linux server. An instance on Amazon's Lightsail is used for hosting - providing a server at a low, fixed cost. Configuration for specific software/packages is included, but can be swapped out as needed.
+This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server. Configuration for specific software/packages is included, but can be swapped out as needed.
 
 ![](logos.png)
 
 ## Table of Contents (WIP)
 
 - Server Setup
-    - AWS Lightsail Instance
-    - Install Python
-    - Install Linux Packages
-    - SSH Securing
-    - Nginx
-    - Let's Encrypt
-    - Hosts File
-    - Supervisor and Gunicorn
-    - Flask
-    - MariaDB
-    - Protect DEV
+    - [Debian Instance](#debian-instance)
+    - [Install Python](#install-python)
+    - [Install Linux Packages](#install-linux-packages)
+    - [SSH Securing](#ssh-securing)
+    - [Nginx](#nginx)
+    - [Let's Encrypt](#lets-encrypt)
+    - [Hosts File](#hosts-file)
+    - [Supervisor and Gunicorn](#supervisor-and-gunicorn)
+    - [Flask](#flask)
+    - [MariaDB](#mariadb)
+    - [Protect DEV](#proect-dev)
     - Swap File
     - Backups
     - Restoring
@@ -37,144 +37,232 @@ This guide will detail the setup of a web application using the [Flask](https://
     - Snippets (and Command Line)
     - Resources
 
-## Amazon (AWS) Lightsail instance
+## Debian Instance
+
+Using the Amazon Web Services 'Lightsail' service as an example host. Assumes you have a domain set up through a registrar and DNS provider that can be pointed at the instance's IP address.
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
-2. On the **Instances** tab, create an Ubuntu 20.x LTS instance (OS Only)
+2. On the **Instances** tab, create an Debian 12.x LTS instance (OS Only)
+    - If you'll be hosting a database on the server, you'll probably want at least 1-2 GB RAM for the instance
 3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
+5. If you will be using a custom domain, set up the DNS record with your DNS provider and point it at the static IP address for your instance.
+6. Set up an SSH connection:
+    1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
+    2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
+    3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
 
-### DNS
+## Install Python
 
-If you will be using a custom domain, set up a blank "A" record with your DNS provider and point it at the static IP address for your instance.
+If you would like to use a more recent version of Python than what is availble in the Linux distribution, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one:
 
-### SSH connection
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
 
-From the **Instances** tab in the Lightsail web interface, you can start an SSH session from your browser using the "Connect" option. For extra convenience, you can bookmark the URL for the session for your instance (e.g. https://lightsail.aws.amazon.com/ls/remote/us-east-2/instances/instance-name/terminal?protocol=ssh). Alternatively, you can:
+sudo apt update
 
-1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
-2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
-3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
+sudo apt install python3.12
 
-## Python (WIP)
+sudo apt install python3.12-venv
+```
 
-If you would like to use a more recent version of Python than what is availble in the Ubuntu LTS instance, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one.
+Otherwise, if you're happy with distribution's version, you'll just need to install the `venv` package that matches the current python version:
 
-1. Install Python 3.11.x:
-    ```
-    sudo add-apt-repository ppa:deadsnakes/ppa
+```
+sudo apt update
 
-    sudo apt update
+sudo apt install python3.11-venv
+```
 
-    sudo apt install python3.11
-    
-    sudo apt-get install python3.11-venv
-    ```
+## Install Linux Packages
 
-## Linux / Ubuntu
+Install packages commonly used with Flask applications.
 
-1. Install packages for python, let's encrypt, supervisor, nginx, git:
-    - `sudo apt-get -y update`
-    - `sudo apt-get -y install certbot python3-certbot-nginx`
-    - `sudo apt-get -y install supervisor nginx git`
-2. Run upgrades with `sudo apt-get upgrade`
-    - You may have to do a couple rounds of updates and reboot in-between, `sudo reboot`
-3. Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`
-    ```
-    # set these lines, if not already set
-    PermitRootLogin no
-    PubkeyAuthentication yes
-    PasswordAuthentication no
-    ChallengeResponseAuthentication no
-    ```
-4. Restart the SSH service, `sudo service ssh restart`
+```
+sudo apt update
+
+sudo apt install nginx supervisor mariadb-server memcached
+
+sudo apt install certbot python3-certbot-nginx
+
+sudo apt install git htop cron
+```
+
+At this point you may want to do a round or two of updates:
+
+```
+sudo apt update
+
+sudo apt upgrade
+
+sudo reboot
+```
+
+## SSH Securing
+
+Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`:
+
+```
+# set these lines, if not already set
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+```
+
+And restart the SSH service, sudo service ssh restart .
 
 ## Nginx
 
-1. Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/appname`:
-    ```
-    server {
-        listen 80;
-        listen [::]:80;
+Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/appname`:
 
-        server_name example.com;
+```
+server {
+    server_name www.appname.com;
+    return 301 $scheme://appname.com$request_uri;
+}
 
-        location / {
-            proxy_pass http://localhost:8000;
-        }
+server {
+    listen 80;
+    server_name appname.com;
 
-        access_log /var/log/appname_access.log;
-        error_log /var/log/appname_error.log;
-        client_max_body_size 5M;
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Prefix /;
     }
-    ```
-2. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload`
+
+    location /static {
+        alias /home/admin/appname.com/app/static;
+        expires 30d;
+    }
+
+	location /robots.txt {
+        alias /home/admin/appname.com/app/static/robots.txt;
+        expires 30d;
+    }
+
+    access_log /var/log/appname_access.log;
+    error_log /var/log/appname_error.log;
+    client_max_body_size 5M;
+}
+```
+
+These rules assume that you have a 'www' record that you want to redirect to a non-www record. It adds configuration specific to Nginx per the [flask nginx](https://flask.palletsprojects.com/en/2.3.x/deploying/nginx/) guide. It assumes that your app is hosted in a directory like `/home/admin/appname.com`, including a `static` directory for files.
+
+Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload`.
 
 ## Let's Encrypt
 
-1. If you haven't already, add a DNS record for your custom domain and point it to your Lightsail instance's static IP
-2. Run certbot for your domain, `sudo certbot --nginx -d example.com`
-3. Do a dry-run to make sure setup is correct, `sudo certbot renew --dry-run`
+Run certbot for your domain, `sudo certbot --nginx -d appname.com -d www.appname.com` and if desired, do a dry-run to make sure setup is correct, `sudo certbot renew --dry-run`. The certbot will make modifications to the `appname` Nginx configuration file.
+
+## Hosts File
+
+In Debian, it seems to be necessary to remove 'localhost' from the IPv6 line in the `/etc/hosts` file in order for the Flask-Limiter to work as expected (discussed later), leaving:
+
+```
+127.0.0.1       localhost
+::1             ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+```
 
 ## Supervisor and Gunicorn
 
-1. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
-    ```
-    [program:appdirectory]
-    command=/home/ubuntu/appdirectory/venv/bin/gunicorn -b localhost:8000 -w 3 appname:app
-    directory=/home/ubuntu/appdirectory
-    user=ubuntu
-    autostart=true
-    autorestart=true
-    stopasgroup=true
-    killasgroup=true
-    ```
+Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
+
+```
+[program:appname.com]
+command=/home/admin/appname.com/venv/bin/gunicorn -b localhost:8000 -w 4 appname:app
+directory=/home/admin/appname.com
+user=admin
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+```
+
+This will create 4 'workers' for the Flask application to use to handle requests.
 
 ## Flask
 
-1. Configure an SSH key on your Lightsail instance for GitHub clones/pulls:
-    - `cd ~/.ssh`
-    - `ssh-keygen -t ed25519 -C "example@example.com"`
-        - To avoid having to add the key to the ssh-agent, don't give the key a custom name (will default to "id_ed25519"), and (optionally) set a passphrase
-    - Add the public key as a 'deploy key' to your GitHub repo, e.g. https://github.com/username/reponame/settings/keys
-2. Checkout application files, create a virtual enviornment and install application dependencies:
-    - `cd ~`
-    - `git clone git@github.com:username/example-repo.git`
-    - `cd example-repo`
-    - `python3.11 -m venv venv`
-    - `source venv/bin/activate`
-    - `pip3 install -r requirements.txt`
-    - Set configuration variables and setup the database, if necessary, e.g. `flask db upgrade`
-3. Reload supervisor:
-    - `sudo supervisorctl reload`
-    - `sudo supervisorctl status`
-    
-To make udpates to the application, you can do a `git pull` on the repo and then run `sudo supervisorctl reload` .
+Create an SSH key on the instance for GitHub clones/pulls by doing `cd ~/.ssh` and then `ssh-keygen -t ed25519 -C "example@gmail.com"`. Don't give the key a custom name or passphrase to avoid having to add to ssh-agent each time. Then, add the public key as a 'deploy key' to the GitHub repo, e.g. https://github.com/username/appname.com/settings/keys .
 
-## (optional) Password protect during development
+Now, checkout the application create a virtual environment and install the application dependencies:
 
-1. Create a username and password with Nginx:
-    - `sudo sh -c "echo -n 'myusername:' >> /etc/nginx/.htpasswd"`
-    - `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"`
-2. Edit your configuration file (e.g. `sudo nano /etc/nginx/sites-enabled/appname` ) and add 'auth_basic' lines:
-    ```
-    ...
-    
-    location / {
-        proxy_pass http://localhost:8000;
-        auth_basic "Restricte Content";
-        auth_basic_user_file /etc/nginx/.htpasswd;
-    }
-    
-    ...
-    ```
-3. Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload` 
+```
+cd ~
 
-## TODO
+git clone git@github.com:username/appname.com.git
 
-- add ufw configuration?
-- add database configuration, other flask configuration?
+cd appname.com
 
-## References
+python3.11 -m venv venv
 
-- [The Flask Mega-Tutorial Part XVII: Deployment on Linux](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux)
+source venv/bin/activate
+
+pip3 install -r requirements.txt
+```
+
+If you have environment variables stored in `.flaskenv` and `.env` files, copy those in (shouldn't be stored in git/GitHub).
+
+## MariaDB
+
+Setup the MariaDB database:
+
+```
+sudo mysql_secure_installation
+# don't need root user password (uses socket instead), but do clean up via the prompts
+
+sudo mysql -u root
+
+CREATE DATABASE appname;
+CREATE USER 'appname'@'localhost' IDENTIFIED BY 'password-here';
+GRANT ALL PRIVILEGES ON appname.* TO 'appname'@'localhost';
+FLUSH PRIVILEGES;
+
+exit;
+```
+
+Add a configuration variable for the database to the .env file:
+
+```
+DATABASE_URL=mysql+pymysql://appname:password-here@localhost:3306/appname
+```
+
+Reboot and initialize the database and reload:
+
+```
+sudo reboot
+
+cd appname.com
+
+source venv/bin/activate
+
+flask db upgrade
+
+sudo supervisorctl reload
+```
+
+## Protect DEV
+
+Optionally, while your app is still under development, you can put a basic password on the site. Create a username and password with Nginx, `sudo sh -c "echo -n 'examplename:' >> /etc/nginx/.htpasswd"` and `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"` . Then edit the confituration file `sudo nano /etc/nginx/sites-enabled/appname`:
+
+```
+...
+
+location / {
+    proxy_pass http://localhost:8000;
+	...
+	...
+    auth_basic "Restricted Content";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+}
+
+...
+```
+
+And then check the syntax, `sudo nginx -t` and reload `sudo service nginx reload`.
+
