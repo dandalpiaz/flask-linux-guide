@@ -7,7 +7,7 @@ This guide will detail the setup of a web application using the [Flask](https://
 
 ## Table of Contents (WIP)
 
-- Server Setup
+- [Server Setup](#server-setup)
     - [Debian Instance](#debian-instance)
     - [Install Python](#install-python)
     - [Install Linux Packages](#install-linux-packages)
@@ -19,25 +19,27 @@ This guide will detail the setup of a web application using the [Flask](https://
     - [Flask](#flask)
     - [MariaDB](#mariadb)
     - [Protect DEV](#proect-dev)
-    - Swap File
-    - Backups
-    - Restoring
+    - [Swap File](#swap-file)
+    - [Backups](#backups)
+    - [Restoring](#restoring)
 - Addons
     - Object Storage
     - SMTP Email
     - Cloudflare CDN
     - Cloudflare Turnstile
 - Maintenance
-    - Python Core
-    - Python Packages
-    - Debian Core and Packages
-    - Deploying Changes
-- Useful Extensions, Snippets, Resources
+    - [Python and Packages](#python-and-packages)
+    - [Debian Core and Packages](#debian-core-and-packages)
+    - [Deploying Changes](#deploying-changes)
+- Useful Extensions, Snippets, etc.
     - Extensions
-    - Snippets (and Command Line)
+    - Snippets
+    - Command Line
     - Resources
 
-## Debian Instance
+## Server Setup
+
+### Debian Instance
 
 Using the Amazon Web Services 'Lightsail' service as an example host. Assumes you have a domain set up through a registrar and DNS provider that can be pointed at the instance's IP address.
 
@@ -50,9 +52,9 @@ Using the Amazon Web Services 'Lightsail' service as an example host. Assumes yo
 6. Set up an SSH connection:
     1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
     2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
-    3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem ubuntu@11.111.11.11`
+    3. SSH into the server, e.g. `ssh -i ~/.ssh/key.pem admin@11.111.11.11`
 
-## Install Python
+### Install Python
 
 If you would like to use a more recent version of Python than what is availble in the Linux distribution, you can use the 'deadsnakes' PPA to add a newer version alongside the existing one:
 
@@ -74,7 +76,7 @@ sudo apt update
 sudo apt install python3.11-venv
 ```
 
-## Install Linux Packages
+### Install Linux Packages
 
 Install packages commonly used with Flask applications.
 
@@ -98,7 +100,7 @@ sudo apt upgrade
 sudo reboot
 ```
 
-## SSH Securing
+### SSH Securing
 
 Disallow root login and password logins, `sudo nano /etc/ssh/sshd_config`:
 
@@ -112,7 +114,7 @@ ChallengeResponseAuthentication no
 
 And restart the SSH service, sudo service ssh restart .
 
-## Nginx
+### Nginx
 
 Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/appname`:
 
@@ -154,11 +156,11 @@ These rules assume that you have a 'www' record that you want to redirect to a n
 
 Check the syntax of the configuration file, `sudo nginx -t` and reload Nginx `sudo service nginx reload`.
 
-## Let's Encrypt
+### Let's Encrypt
 
 Run certbot for your domain, `sudo certbot --nginx -d appname.com -d www.appname.com` and if desired, do a dry-run to make sure setup is correct, `sudo certbot renew --dry-run`. The certbot will make modifications to the `appname` Nginx configuration file.
 
-## Hosts File
+### Hosts File
 
 In Debian, it seems to be necessary to remove 'localhost' from the IPv6 line in the `/etc/hosts` file in order for the Flask-Limiter to work as expected (discussed later), leaving:
 
@@ -169,7 +171,7 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 ```
 
-## Supervisor and Gunicorn
+### Supervisor and Gunicorn
 
 Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
 
@@ -186,7 +188,7 @@ killasgroup=true
 
 This will create 4 'workers' for the Flask application to use to handle requests.
 
-## Flask
+### Flask
 
 Create an SSH key on the instance for GitHub clones/pulls by doing `cd ~/.ssh` and then `ssh-keygen -t ed25519 -C "example@gmail.com"`. Don't give the key a custom name or passphrase to avoid having to add to ssh-agent each time. Then, add the public key as a 'deploy key' to the GitHub repo, e.g. https://github.com/username/appname.com/settings/keys .
 
@@ -208,7 +210,7 @@ pip3 install -r requirements.txt
 
 If you have environment variables stored in `.flaskenv` and `.env` files, copy those in (shouldn't be stored in git/GitHub).
 
-## MariaDB
+### MariaDB
 
 Setup the MariaDB database:
 
@@ -226,7 +228,7 @@ FLUSH PRIVILEGES;
 exit;
 ```
 
-Add a configuration variable for the database to the .env file:
+Add a configuration variable for the database to the `.env` file:
 
 ```
 DATABASE_URL=mysql+pymysql://appname:password-here@localhost:3306/appname
@@ -246,7 +248,7 @@ flask db upgrade
 sudo supervisorctl reload
 ```
 
-## Protect DEV
+### Protect DEV
 
 Optionally, while your app is still under development, you can put a basic password on the site. Create a username and password with Nginx, `sudo sh -c "echo -n 'examplename:' >> /etc/nginx/.htpasswd"` and `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"` . Then edit the confituration file `sudo nano /etc/nginx/sites-enabled/appname`:
 
@@ -266,3 +268,113 @@ location / {
 
 And then check the syntax, `sudo nginx -t` and reload `sudo service nginx reload`.
 
+### Swap File
+
+Create a `/swapfile` in case of memory issues:
+
+```
+sudo fallocate -l 2G /swapfile
+
+sudo chmod 600 /swapfile
+
+sudo mkswap /swapfile
+
+sudo swapon /swapfile
+
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+sudo swapon --show
+```
+
+And adjust the 'swappiness':
+
+```
+sudo nano /etc/sysctl.d/99-sysctl.conf
+
+vm.swappiness=10
+
+sudo sysctl --system
+
+sudo reboot
+```
+
+### Backups
+
+TBD
+
+### Restoring
+
+TBD
+
+## Addons
+
+### Object Storage
+
+TBD
+
+### SMTP Email
+
+TBD
+
+### Cloudflare CDN
+
+TBD
+
+### Cloudflare Turnstile
+
+TBD
+
+## Maintenance
+
+### Python and Packages
+
+On Debian, Python core updates should be available through the default package, or deadsnakes. For Python packages, make sure that Dependabot alerts are enabled in your GitHub repo. When a vulnerability is found, you can specify the version to upgrade to in the `requirements.txt` file and then follow 'Deploying Changes' below (after testing).
+
+### Debian Core and Packages
+
+Run updates with:
+
+```
+sudo apt update
+
+sudo apt upgrade
+
+sudo reboot
+```
+
+### Deploying Changes
+
+```
+cd ~/appname.com
+
+git pull
+
+# start virtual environment (if needed)
+source venv/bin/activate
+
+# package updates (if needed)
+pip3 install -r requirements.txt
+
+# database updates (if needed)
+flask db upgrade
+
+sudo supervisorctl reload
+```
+
+## Useful Extensions, Snippets, etc.
+
+### Extensions
+
+TBD
+
+### Snippets
+
+TBD
+
+### Command Line
+
+TBD
+
+### Resources
+
+TBD
