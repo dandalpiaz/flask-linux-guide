@@ -1,9 +1,16 @@
 
 # Linux Server Configuration for a Python Flask Application on a Debian-based Host
 
-This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server. Configuration for specific software/packages is included, but can be swapped out as needed.
-
 ![](logos.png)
+
+This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server. Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
+
+- `appname.com` and `www.appname.com` - the site's domain
+- `/home/admin/appname.com` - the application's directory on the server
+- `/etc/nginx/sites-enabled/appname.conf` - the web server configuration file
+- `/etc/supervisor/conf.d/appname.conf` - the supervisor configuration file
+- `appname` - the name of the database, and the database user
+- `appname.py` - the name of the main/start file for the application
 
 ## Table of Contents (WIP)
 
@@ -20,13 +27,13 @@ This guide will detail the setup of a web application using the [Flask](https://
     - [MariaDB](#mariadb)
     - [Protect DEV](#proect-dev)
     - [Swap File](#swap-file)
-    - [Backups](#backups)
-    - [Restoring](#restoring)
+    - Backups
+    - Restoring
 - Addons
     - Object Storage
-    - SMTP Email
+    - [SMTP Email](#smtp-email)
     - Cloudflare CDN
-    - Cloudflare Turnstile
+    - [Cloudflare Turnstile](#cloudflare-turnstile)
 - Maintenance
     - [Python and Packages](#python-and-packages)
     - [Debian Core and Packages](#debian-core-and-packages)
@@ -78,7 +85,7 @@ sudo apt install python3.11-venv
 
 ### Install Linux Packages
 
-Install packages commonly used with Flask applications.
+Install packages commonly used with Flask applications. Nginx is used for the web server, Supervisor manages Flask processes/workers, MariaDB is used for the database, Memcached is used for in-memory storage (useful for Flask-Limiter, discussed later).
 
 ```
 sudo apt update
@@ -116,7 +123,7 @@ And restart the SSH service, sudo service ssh restart .
 
 ### Nginx
 
-Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/appname`:
+Remove the default configuration file, `sudo rm /etc/nginx/sites-enabled/default` and create a new one `sudo nano /etc/nginx/sites-enabled/appname.conf`:
 
 ```
 server {
@@ -250,7 +257,7 @@ sudo supervisorctl reload
 
 ### Protect DEV
 
-Optionally, while your app is still under development, you can put a basic password on the site. Create a username and password with Nginx, `sudo sh -c "echo -n 'examplename:' >> /etc/nginx/.htpasswd"` and `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"` . Then edit the confituration file `sudo nano /etc/nginx/sites-enabled/appname`:
+Optionally, while your app is still under development, you can put a basic password on the site. Create a username and password with Nginx, `sudo sh -c "echo -n 'examplename:' >> /etc/nginx/.htpasswd"` and `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"` . Then edit the confituration file `sudo nano /etc/nginx/sites-enabled/appname.conf`:
 
 ```
 ...
@@ -314,7 +321,14 @@ TBD
 
 ### SMTP Email
 
-TBD
+Web applications needing to send email (e.g. for account management) often use an SMTP service. Using [Amazon Simple Email Service (SES)](https://aws.amazon.com/console/) as an example, you would set this up by:
+
+1. Creating the resource in your desired region
+2. From 'Verified identites', complete DKIM verfication using DNS records for appname.com
+3. Also verify a 'Custom MAIL FROM domain' for mail.appname.com
+4. Create an IAM user which can then create an SMTP key
+5. Copy the 'server address', 'username' and 'SES key/password' to your `.env` file for use in the application's configuration
+6. Request 'production access' from Amazon (requires a brief justification for your intended usage)
 
 ### Cloudflare CDN
 
@@ -322,7 +336,12 @@ TBD
 
 ### Cloudflare Turnstile
 
-TBD
+Web applications will often use a CAPTCHA-type challenge to verify that users are human and not bots. These are commonly added to important forms in the application, like sign up forms. Using [Cloudflare Turnstile](https://www.cloudflare.com/) as an example:
+
+1. Select 'Turnstile' from the sidebar and click the 'Add site' button
+2. Create a 'Managed' widget and copy the 'Site Key' and 'Secret key' to your `.env` file
+3. Add 'appname.com' as an allowed domain
+    - Adding 'localhost' can be useful for testing, but consider removing 'localhost' from the allowed domains when moving to production and use the [test keys](https://developers.cloudflare.com/turnstile/reference/testing/) instead
 
 ## Maintenance
 
@@ -369,7 +388,7 @@ TBD
 
 ### Snippets
 
-TBD
+TBD - add things related to addons above, others?
 
 ### Command Line
 
