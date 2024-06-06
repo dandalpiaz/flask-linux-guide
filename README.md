@@ -30,9 +30,9 @@ This guide will detail the setup of a web application using the [Flask](https://
     - [Backups](#backups)
     - [Restoring](#restoring)
 - Addons
-    - Object Storage
+    - [Object Storage](#object-storage)
     - [SMTP Email](#smtp-email)
-    - Cloudflare CDN
+    - [Cloudflare CDN](#cloudflare-cdn)
     - [Cloudflare Turnstile](#cloudflare-turnstile)
 - Maintenance
     - [Python and Packages](#python-and-packages)
@@ -180,7 +180,7 @@ ff02::2         ip6-allrouters
 
 ### Supervisor and Gunicorn
 
-Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
+Assumes the use of the Gunicorn python package for a WSGI HTTP server. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
 
 ```
 [program:appname.com]
@@ -355,7 +355,14 @@ tar -xzf uploads.tar.gz -C /home/admin/appname.com/app/uploads
 
 ### Object Storage
 
-TBD
+Web applications will often need storage for upload files, outside of the available storage space on the server, for both capacity and performance reasons. Different 'object storage' services are available. Using a [Lightsail bucket](https://lightsail.aws.amazon.com/ls/webapp/home/storage) as a simple example:
+
+1. Login to Lightsail, switch to the 'Storage' tab and click the 'Create bucket' button
+2. Set bucket location to to your desired region, choose storage amount
+3. Manage the bucket and switch to the 'Permission' tab
+4. Create an 'Access key' and copy the 'access key id', 'secret key', 'bucket name' and 'region' to the `.env` file
+
+[[[needs snippets]]]
 
 ### SMTP Email
 
@@ -368,9 +375,17 @@ Web applications needing to send email (e.g. for account management) often use a
 5. Copy the 'server address', 'username' and 'SES key/password' to your `.env` file for use in the application's configuration
 6. Request 'production access' from Amazon (requires a brief justification for your intended usage)
 
+[[[needs snippets]]]
+
 ### Cloudflare CDN
 
-TBD
+For better performance globally, applications will often make use of a Content Delivery Network (CDN). [Cloudflare](https://www.cloudflare.com/) offers a free CDN option. The setup will depend on how your DNS is configured, but steps might include:
+
+1. Importing/adding DNS records into Cloudflare from your current DNS provider
+2. Switching your 'name servers' to the values provided in the CLoudflare dashboard
+3. Setting options like 'Always Use HTTPS', 'Automatic HTTPS Rewrites' and 'Full (strict) mode'
+4. Enabling DNSSEC, which will require adding a DS record to the DNS
+5. Following Cloudflare suggestions for DNS records related to email spoofing: SPF, DKIM, DMARC, etc. 
 
 ### Cloudflare Turnstile
 
@@ -380,6 +395,8 @@ Web applications will often use a CAPTCHA-type challenge to verify that users ar
 2. Create a 'Managed' widget and copy the 'Site Key' and 'Secret key' to your `.env` file
 3. Add 'appname.com' as an allowed domain
     - Adding 'localhost' can be useful for testing, but consider removing 'localhost' from the allowed domains when moving to production and use the [test keys](https://developers.cloudflare.com/turnstile/reference/testing/) instead
+
+[[[needs snippets]]]
 
 ## Maintenance
 
