@@ -14,7 +14,7 @@ This guide will detail the setup of a web application using the [Flask](https://
 
 ## Table of Contents (WIP)
 
-- [Server Setup](#server-setup)
+- Server Setup
     - [Debian Instance](#debian-instance)
     - [Install Python](#install-python)
     - [Install Linux Packages](#install-linux-packages)
@@ -41,7 +41,7 @@ This guide will detail the setup of a web application using the [Flask](https://
 - Useful Extensions, Snippets, etc.
     - Extensions
     - Snippets
-    - Command Line
+    - [Command Line](#command-line)
     - Resources
 
 ## Server Setup
@@ -447,7 +447,39 @@ TBD - add things related to addons above, others?
 
 ### Command Line
 
-TBD
+In your main `appname.py` file, if you can define parts of your database model that you can interact with from a command line session:
+
+```
+from app import app, db
+from app.models import User, Page
+
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'User': User, 'Page': Page}
+```
+
+You can then start a command line session with:
+
+```
+source venv/bin/activate
+
+flask shell
+```
+
+And query data or make modifications like:
+
+```
+users = User.query.all()
+
+for u in users:
+    print(u.id, u.email)
+
+user_to_delete = User.query.get(2)
+
+db.session.delete(u)
+
+db.session.commit()
+```
 
 ### Resources
 
