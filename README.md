@@ -3,9 +3,9 @@
 
 ![](logos.png)
 
-This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server. Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
+This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server (Debian, Ubuntu, etc.). Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
 
-- `appname.com` and `www.appname.com` - the site's domain
+- `appname.com` - the site's domain
 - `/home/admin/appname.com` - the application's directory on the server
 - `/etc/nginx/sites-enabled/appname.conf` - the web server configuration file
 - `/etc/supervisor/conf.d/appname.conf` - the supervisor configuration file
@@ -27,8 +27,8 @@ This guide will detail the setup of a web application using the [Flask](https://
     - [MariaDB](#mariadb)
     - [Protect DEV](#proect-dev)
     - [Swap File](#swap-file)
-    - Backups
-    - Restoring
+    - [Backups](#backups)
+    - [Restoring](#restoring)
 - Addons
     - Object Storage
     - [SMTP Email](#smtp-email)
@@ -223,7 +223,8 @@ Setup the MariaDB database:
 
 ```
 sudo mysql_secure_installation
-# don't need root user password (uses socket instead), but do clean up via the prompts
+# don't need root user password (uses socket auth instead)
+# but do clean up tables via the prompts
 
 sudo mysql -u root
 
@@ -235,7 +236,7 @@ FLUSH PRIVILEGES;
 exit;
 ```
 
-Add a configuration variable for the database to the `.env` file:
+Add a configuration variable for the database to the `.env` file, for example, if you're using the pymysql package/library:
 
 ```
 DATABASE_URL=mysql+pymysql://appname:password-here@localhost:3306/appname
@@ -307,11 +308,48 @@ sudo reboot
 
 ### Backups
 
-TBD
+An automatic backup of the database and files uploaded to the application can be configured using [rclone](https://rclone.org/downloads/). As an example, you could follow the [rclone dropbox](https://rclone.org/dropbox/) configuration instructions. Since the server doesn't have a web browser to complete the setup, this will require installing rclone on a different computer to get a token. For example, on Windows, download and extract rclone.exe and run with cmd:
+
+```
+rclone.exe authorize "dropbox"
+```
+
+Then, on the server, you can add a cron job for various backups and use rclone commands to send it to a Dropbox folder in your account. Run `crontab -e` and add to the file:
+
+```
+30 1 * * * cd /home/admin && sudo mysqldump appname > appname.sql
+40 1 * * * tar -czvf /home/admin/uploads.tar.gz -C /home/admin/appname.com/app/uploads .
+30 2 * * * rclone copy /home/admin/appname.sql dropbox:appname.com/backup-$(date +\%Y-\%m-\%d)
+40 2 * * * rclone copy /home/admin/uploads.tar.gz dropbox:appname.com/backup-$(date +\%Y-\%m-\%d)
+```
 
 ### Restoring
 
-TBD
+If a database restore is needed, you can remove the current database, download the backup SQL file from Dropbox (as an example), upload it to the server, and create a new database and import:
+
+```
+# locally:
+scp -i /c/ssh/key.pem appname.sql admin@11.111.11.11:/home/admin
+
+# connect to server, then:
+sudo mysql -u root
+
+DROP DATABASE appname;
+CREATE DATABASE appname;
+exit;
+
+sudo mysql -u root appname < appname.sql
+```
+
+To restore uploaded files, download the backup archive from Dropbox (as an example), upload it to the server, and copy:
+
+```
+# locally:
+scp -i /c/ssh/key.pem uploads.tar.gz admin@11.111.11.11:/home/admin
+
+# connect to server, then:
+tar -xzf uploads.tar.gz -C /home/admin/appname.com/app/uploads
+```
 
 ## Addons
 
