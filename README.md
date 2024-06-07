@@ -3,7 +3,7 @@
 
 ![](logos.png)
 
-This guide will detail the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server (Debian, Ubuntu, etc.). Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
+This guide details the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server (Debian, Ubuntu, etc.). Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
 
 - `appname.com` - the site's domain
 - `/home/admin/appname.com` - the application's directory on the server
@@ -12,7 +12,9 @@ This guide will detail the setup of a web application using the [Flask](https://
 - `appname` - the name of the database, and the database user
 - `appname.py` - the name of the main/start file for the application
 
-## Table of Contents (WIP)
+[[[add note about env config]]]
+
+## Table of Contents
 
 - Server Setup
     - [Debian Instance](#debian-instance)
@@ -29,7 +31,7 @@ This guide will detail the setup of a web application using the [Flask](https://
     - [Swap File](#swap-file)
     - [Backups](#backups)
     - [Restoring](#restoring)
-- Addons
+- Other Services, Extensions, etc.
     - [Object Storage](#object-storage)
     - [SMTP Email](#smtp-email)
     - [Cloudflare CDN](#cloudflare-cdn)
@@ -38,11 +40,7 @@ This guide will detail the setup of a web application using the [Flask](https://
     - [Python and Packages](#python-and-packages)
     - [Debian Core and Packages](#debian-core-and-packages)
     - [Deploying Changes](#deploying-changes)
-- Useful Extensions, Snippets, etc.
-    - Extensions
-    - Snippets
     - [Command Line](#command-line)
-    - Resources
 
 ## Server Setup
 
@@ -85,7 +83,7 @@ sudo apt install python3.11-venv
 
 ### Install Linux Packages
 
-Install packages commonly used with Flask applications. Nginx is used for the web server, Supervisor manages Flask processes/workers, MariaDB is used for the database, Memcached is used for in-memory storage (useful for Flask-Limiter, discussed later).
+Install packages commonly used with Flask applications. Nginx is used for the web server, Supervisor manages Flask processes/workers, MariaDB is used for the database, Memcached is used for in-memory storage (useful for extensions like [Flask-Limiter](https://flask-limiter.readthedocs.io/en/stable/)).
 
 ```
 sudo apt update
@@ -169,7 +167,7 @@ Run certbot for your domain, `sudo certbot --nginx -d appname.com -d www.appname
 
 ### Hosts File
 
-In Debian, it seems to be necessary to remove 'localhost' from the IPv6 line in the `/etc/hosts` file in order for the Flask-Limiter to work as expected (discussed later), leaving:
+In Debian, it seems to be necessary to remove 'localhost' from the IPv6 line in the `/etc/hosts` file in order for the Flask-Limiter to work as expected, leaving:
 
 ```
 127.0.0.1       localhost
@@ -351,7 +349,7 @@ scp -i /c/ssh/key.pem uploads.tar.gz admin@11.111.11.11:/home/admin
 tar -xzf uploads.tar.gz -C /home/admin/appname.com/app/uploads
 ```
 
-## Addons
+## Other Services, Extensions, etc.
 
 ### Object Storage
 
@@ -362,7 +360,7 @@ Web applications will often need storage for upload files, outside of the availa
 3. Manage the bucket and switch to the 'Permission' tab
 4. Create an 'Access key' and copy the 'access key id', 'secret key', 'bucket name' and 'region' to the `.env` file
 
-[[[needs snippets]]]
+[[[link to boto3 package]]]
 
 ### SMTP Email
 
@@ -375,7 +373,7 @@ Web applications needing to send email (e.g. for account management) often use a
 5. Copy the 'server address', 'username' and 'SES key/password' to your `.env` file for use in the application's configuration
 6. Request 'production access' from Amazon (requires a brief justification for your intended usage)
 
-[[[needs snippets]]]
+[[[link to Flask-Mail]]]
 
 ### Cloudflare CDN
 
@@ -396,7 +394,7 @@ Web applications will often use a CAPTCHA-type challenge to verify that users ar
 3. Add 'appname.com' as an allowed domain
     - Adding 'localhost' can be useful for testing, but consider removing 'localhost' from the allowed domains when moving to production and use the [test keys](https://developers.cloudflare.com/turnstile/reference/testing/) instead
 
-[[[needs snippets]]]
+[[[link to Flask-Turnstile or Flask-reCaptcha]]]
 
 ## Maintenance
 
@@ -435,17 +433,7 @@ flask db upgrade
 sudo supervisorctl reload
 ```
 
-## Useful Extensions, Snippets, etc.
-
-### Extensions
-
-TBD
-
-### Snippets
-
-TBD - add things related to addons above, others?
-
-### Command Line
+## Command Line
 
 In your main `appname.py` file, if you can define parts of your database model that you can interact with from a command line session:
 
