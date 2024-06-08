@@ -12,8 +12,6 @@ This guide details the setup of a web application using the [Flask](https://flas
 - `appname` - the name of the database, and the database user
 - `appname.py` - the name of the main/start file for the application
 
-[[[add note about env config]]]
-
 ## Table of Contents
 
 - Server Setup
@@ -27,10 +25,10 @@ This guide details the setup of a web application using the [Flask](https://flas
     - [Supervisor and Gunicorn](#supervisor-and-gunicorn)
     - [Flask](#flask)
     - [MariaDB](#mariadb)
-    - [Protect DEV](#proect-dev)
     - [Swap File](#swap-file)
     - [Backups](#backups)
     - [Restoring](#restoring)
+    - [Protect DEV](#proect-dev)
 - Other Services, Extensions, etc.
     - [Object Storage](#object-storage)
     - [SMTP Email](#smtp-email)
@@ -46,14 +44,15 @@ This guide details the setup of a web application using the [Flask](https://flas
 
 ### Debian Instance
 
-Using the Amazon Web Services 'Lightsail' service as an example host. Assumes you have a domain set up through a registrar and DNS provider that can be pointed at the instance's IP address.
+Using the Amazon Web Services 'Lightsail' as an example host. Assumes that you have a domain set up through a registrar and DNS provider that can be pointed at the instance's IP address.
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
 2. On the **Instances** tab, create an Debian 12.x LTS instance (OS Only)
     - If you'll be hosting a database on the server, you'll probably want at least 1-2 GB RAM for the instance
+    - Note, you'll likely want an instance with an IPv4 and IPv6 address unless your application can function with only IPv6
 3. On the **Networking** tab, create a static IP address and attach it to your instance.
 4. On the **Instances** tab, find the 'Manage' option for your instance and enable HTTPS (port 443) on the 'Networking' tab for both the IPv4 and IPv6 firewalls.
-5. If you will be using a custom domain, set up the DNS record with your DNS provider and point it at the static IP address for your instance.
+5. If you will be using a custom domain, set up the DNS record(s) with your DNS provider and point it at the static IP address for your instance.
 6. Set up an SSH connection:
     1. From the **Account** navigation menu in Lightsail, choose "Account" and then move to the "SSH keys" tab. You'll be able to download a default SSH key from this page.
     2. Move the key file to the appropriate directory in your system. Depending on your system, you may need to set permissions for the key, e.g. `chmod 400 key.pem` 
@@ -83,7 +82,7 @@ sudo apt install python3.11-venv
 
 ### Install Linux Packages
 
-Install packages commonly used with Flask applications. Nginx is used for the web server, Supervisor manages Flask processes/workers, MariaDB is used for the database, Memcached is used for in-memory storage (useful for extensions like [Flask-Limiter](https://flask-limiter.readthedocs.io/en/stable/)).
+Install packages commonly used with Flask applications. Nginx is used for the web server (note that you'll want to [Tell Flask it is Behind a Proxy](https://flask.palletsprojects.com/en/3.0.x/deploying/proxy_fix/)), Supervisor manages Flask processes/workers, MariaDB is used for the database, Memcached is used for in-memory storage (useful for extensions like [Flask-Limiter](https://flask-limiter.readthedocs.io/en/stable/)).
 
 ```
 sudo apt update
@@ -178,7 +177,7 @@ ff02::2         ip6-allrouters
 
 ### Supervisor and Gunicorn
 
-Assumes the use of the Gunicorn python package for a WSGI HTTP server. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
+As an example, using the [Gunicorn](https://gunicorn.org/) python package for a WSGI HTTP server. Create a supervisor configuration file, `sudo nano /etc/supervisor/conf.d/appname.conf`:
 
 ```
 [program:appname.com]
@@ -213,7 +212,7 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-If you have environment variables stored in `.flaskenv` and `.env` files, copy those in (shouldn't be stored in git/GitHub).
+If you have environment variables stored in `.flaskenv` and `.env` files, add those files in (they shouldn't be stored in git/GitHub).
 
 ### MariaDB
 
@@ -222,7 +221,7 @@ Setup the MariaDB database:
 ```
 sudo mysql_secure_installation
 # don't need root user password (uses socket auth instead)
-# but do clean up tables via the prompts
+# but do clean up default tables/users via the prompts
 
 sudo mysql -u root
 
@@ -234,13 +233,13 @@ FLUSH PRIVILEGES;
 exit;
 ```
 
-Add a configuration variable for the database to the `.env` file, for example, if you're using the pymysql package/library:
+Add a configuration variable for the database to the `.env` file, for example, if you're using the [pymysql](https://pymysql.readthedocs.io/en/latest/) package/library:
 
 ```
 DATABASE_URL=mysql+pymysql://appname:password-here@localhost:3306/appname
 ```
 
-Reboot and initialize the database and reload:
+Reboot and initialize the database and reload. Note, the  `flask db upgrade` command comes from [Flask-Migrate](https://flask-migrate.readthedocs.io/en/latest/):
 
 ```
 sudo reboot
@@ -253,26 +252,6 @@ flask db upgrade
 
 sudo supervisorctl reload
 ```
-
-### Protect DEV
-
-Optionally, while your app is still under development, you can put a basic password on the site. Create a username and password with Nginx, `sudo sh -c "echo -n 'examplename:' >> /etc/nginx/.htpasswd"` and `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"` . Then edit the confituration file `sudo nano /etc/nginx/sites-enabled/appname.conf`:
-
-```
-...
-
-location / {
-    proxy_pass http://localhost:8000;
-	...
-	...
-    auth_basic "Restricted Content";
-    auth_basic_user_file /etc/nginx/.htpasswd;
-}
-
-...
-```
-
-And then check the syntax, `sudo nginx -t` and reload `sudo service nginx reload`.
 
 ### Swap File
 
@@ -349,18 +328,38 @@ scp -i /c/ssh/key.pem uploads.tar.gz admin@11.111.11.11:/home/admin
 tar -xzf uploads.tar.gz -C /home/admin/appname.com/app/uploads
 ```
 
+### Protect DEV
+
+Optionally, while your app is still under development, you can put a basic password on the site. Create a username and password with Nginx, `sudo sh -c "echo -n 'exampleusername:' >> /etc/nginx/.htpasswd"` and `sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"` . Then edit the confituration file `sudo nano /etc/nginx/sites-enabled/appname.conf`:
+
+```
+...
+
+location / {
+    proxy_pass http://localhost:8000;
+	...
+	...
+    auth_basic "Restricted Content";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+}
+
+...
+```
+
+And then check the syntax, `sudo nginx -t` and reload `sudo service nginx reload`.
+
 ## Other Services, Extensions, etc.
 
 ### Object Storage
 
-Web applications will often need storage for upload files, outside of the available storage space on the server, for both capacity and performance reasons. Different 'object storage' services are available. Using a [Lightsail bucket](https://lightsail.aws.amazon.com/ls/webapp/home/storage) as a simple example:
+Web applications will often need storage for uploaded files beyond the available storage space on the server, for both capacity and performance reasons. Different 'object storage' services are available. Using a [Lightsail bucket](https://lightsail.aws.amazon.com/ls/webapp/home/storage) as a simple example:
 
 1. Login to Lightsail, switch to the 'Storage' tab and click the 'Create bucket' button
 2. Set bucket location to to your desired region, choose storage amount
 3. Manage the bucket and switch to the 'Permission' tab
 4. Create an 'Access key' and copy the 'access key id', 'secret key', 'bucket name' and 'region' to the `.env` file
 
-[[[link to boto3 package]]]
+To work with the bucket, you'll likely want the [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) package installed for your Flask app.
 
 ### SMTP Email
 
@@ -373,7 +372,7 @@ Web applications needing to send email (e.g. for account management) often use a
 5. Copy the 'server address', 'username' and 'SES key/password' to your `.env` file for use in the application's configuration
 6. Request 'production access' from Amazon (requires a brief justification for your intended usage)
 
-[[[link to Flask-Mail]]]
+To send mail from the application, you'll likely want something like the [Flask-Mail](https://pypi.org/project/Flask-Mail/) extension for your app.
 
 ### Cloudflare CDN
 
@@ -394,7 +393,7 @@ Web applications will often use a CAPTCHA-type challenge to verify that users ar
 3. Add 'appname.com' as an allowed domain
     - Adding 'localhost' can be useful for testing, but consider removing 'localhost' from the allowed domains when moving to production and use the [test keys](https://developers.cloudflare.com/turnstile/reference/testing/) instead
 
-[[[link to Flask-Turnstile or Flask-reCaptcha]]]
+You can use the [Flask-Turnstile](https://pypi.org/project/Flask-Turnstile/) extension for Cloudflare CAPTCHAs, or something like [Flask-reCaptcha](https://pypi.org/project/Flask-reCaptcha/) if you're using Google CAPTCHAs.
 
 ## Maintenance
 
@@ -468,7 +467,3 @@ db.session.delete(u)
 
 db.session.commit()
 ```
-
-### Resources
-
-TBD
