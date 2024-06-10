@@ -28,7 +28,8 @@ This guide details the setup of a web application using the [Flask](https://flas
     - [Swap File](#swap-file)
     - [Backups](#backups)
     - [Restoring](#restoring)
-    - [Protect DEV](#proect-dev)
+    - [Protect DEV](#protect-dev)
+    - [References](#references)
 - Other Services, Extensions, etc.
     - [Object Storage](#object-storage)
     - [SMTP Email](#smtp-email)
@@ -347,6 +348,10 @@ location / {
 ```
 
 And then check the syntax, `sudo nginx -t` and reload `sudo service nginx reload`.
+
+### References
+
+Miguel Grinberg's [Flask Mega Tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux) was referenced for parts of these server configurations.
 
 ## Other Services, Extensions, etc.
 
