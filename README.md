@@ -3,7 +3,7 @@
 
 ![](logos.png)
 
-This guide details the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a traditional Debian-based Linux server (Debian, Ubuntu, etc.). Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
+This guide details the setup of a web application using the [Flask](https://flask.palletsprojects.com/en/2.2.x/) framework on a 'traditional' Debian-based Linux server (Debian, Ubuntu, etc.). Configuration for specific software/packages is included, but can be swapped out as needed. The guide will make use of "appname.com" and variations on that name for different purposes:
 
 - `appname.com` - the site's domain
 - `/home/admin/appname.com` - the application's directory on the server
@@ -45,7 +45,7 @@ This guide details the setup of a web application using the [Flask](https://flas
 
 ### Debian Instance
 
-Using the Amazon Web Services 'Lightsail' as an example host. Assumes that you have a domain set up through a registrar and DNS provider that can be pointed at the instance's IP address.
+Using the Amazon Web Services 'Lightsail' service as an example host (other hosts that offer a similar option for a Debian-based VPS include [DigitalOcean](https://www.digitalocean.com/pricing/droplets) and [Linode](https://www.linode.com/pricing/#compute-shared)). Assumes that you have a domain set up through a registrar and DNS provider that can be pointed at the instance's IP address.
 
 1. Create an account or login to AWS Lightsail, https://lightsail.aws.amazon.com.
 2. On the **Instances** tab, create an Debian 12.x LTS instance (OS Only)
